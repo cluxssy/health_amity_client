@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <img src="https://upload.wikimedia.org/wikipedia/en/f/ff/Amity_University_logo.png" 
+                 alt="Amity University Logo" 
+                 class="img-fluid mb-4" 
+                 style="max-width: 250px;">
+            <h1 class="display-4 mb-3 fw-bold">Welcome to HealthAmity</h1>
+            <p class="lead text-secondary mb-4">Your Intelligent Healthcare Companion</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Health Stats Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stats-card">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-heart-pulse fs-1 me-3"></i>
+                    <div>
+                        <h3>Health Stats</h3>
+                        <p>Track your vitals</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('health_monitoring') }}" class="btn btn-light w-100">View Details</a>
+            </div>
+        </div>
+
+        <!-- AI Assistant Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stats-card" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-robot fs-1 me-3"></i>
+                    <div>
+                        <h3>AI Assistant</h3>
+                        <p>Get health insights</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('ai_chat') }}" class="btn btn-light w-100">Chat Now</a>
+            </div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stats-card" style="background: linear-gradient(135deg, #4f46e5, #4338ca);">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-person-circle fs-1 me-3"></i>
+                    <div>
+                        <h3>Profile</h3>
+                        <p>Manage your account</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('profile') }}" class="btn btn-light w-100">View Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mt-5 g-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">Features & Benefits</h2>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-primary mb-3">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Health Monitoring</h5>
+                    <p class="card-text text-secondary">Track your vital signs and health metrics with our advanced monitoring system.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-primary mb-3">
+                        <i class="bi bi-cpu fs-1"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">AI-Powered Analysis</h5>
+                    <p class="card-text text-secondary">Get intelligent health insights and recommendations from our AI system.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-primary mb-3">
+                        <i class="bi bi-shield-check fs-1"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Data Security</h5>
+                    <p class="card-text text-secondary">Your health data is protected with enterprise-grade security measures.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-primary mb-3">
+                        <i class="bi bi-person-lines-fill fs-1"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Personalized Care</h5>
+                    <p class="card-text text-secondary">Receive customized health recommendations based on your profile.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

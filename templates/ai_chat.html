@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health Assistant{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-robot"></i> AI Health Assistant</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> Describe your symptoms and I'll help analyze them. Remember, this is for informational purposes only - always consult a healthcare professional for medical advice.
+                    </div>
+                    <div id="chat-messages" class="mb-4" style="height: 400px; overflow-y: auto;">
+                        <!-- Messages will appear here -->
+                    </div>
+                    <form id="chat-form" class="mt-3">
+                        <div class="input-group">
+                            <input type="text" id="user-input" class="form-control" placeholder="Describe your symptoms..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+
+    function addMessage(message, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `d-flex ${isUser ? 'justify-content-end' : 'justify-content-start'} mb-3`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = `p-3 rounded ${isUser ? 'bg-primary text-white' : 'bg-light'}`;
+        contentDiv.style.maxWidth = '80%';
+        
+        // Convert newlines to <br> tags
+        const formattedMessage = message.replace(/\n/g, '<br>');
+        contentDiv.innerHTML = formattedMessage;
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, true);
+        userInput.value = '';
+        userInput.disabled = true;
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+            
+            // Add AI response
+            addMessage(data.message);
+            
+            // Add warning if present
+            if (data.warning) {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${data.warning}`;
+                chatMessages.appendChild(warningDiv);
+            }
+        } catch (error) {
+            addMessage('Sorry, I encountered an error. Please try again later.');
+        }
+
+        userInput.disabled = false;
+        userInput.focus();
+    });
+});
+</script>
+{% endblock %}

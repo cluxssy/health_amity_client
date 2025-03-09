@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="text-center mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/en/f/ff/Amity_University_logo.png" 
+                     alt="Amity University Logo" 
+                     class="img-fluid mb-4" 
+                     style="max-width: 200px;">
+            </div>
+            <div class="card border-0 shadow-lg" style="border-radius: 1rem;">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4 fw-bold">Welcome Back</h2>
+                    <p class="text-center text-secondary mb-4">Sign in to your HealthAmity account</p>
+                    
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="mb-4">
+                            <label for="email" class="form-label text-secondary">Email address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope text-primary"></i>
+                                </span>
+                                <input type="email" 
+                                       class="form-control border-start-0 ps-0" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="Enter your email"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label text-secondary">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-lock text-primary"></i>
+                                </span>
+                                <input type="password" 
+                                       class="form-control border-start-0 ps-0" 
+                                       id="password" 
+                                       name="password" 
+                                       placeholder="Enter your password"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-secondary mb-0">Don't have an account? 
+                                <a href="{{ url_for('register') }}" class="text-primary text-decoration-none fw-bold">Register</a>
+                            </p>
+                            <p class="text-muted mt-3 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Demo credentials: test@test.com / test
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-group-text {
+        border-radius: 0.5rem 0 0 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+    
+    .input-group .form-control {
+        border-radius: 0 0.5rem 0.5rem 0;
+        border: 1px solid var(--border-color);
+    }
+    
+    .input-group-text, .form-control {
+        padding: 0.75rem 1rem;
+    }
+    
+    .input-group:focus-within .input-group-text,
+    .input-group:focus-within .form-control {
+        border-color: var(--primary-color);
+    }
+</style>
+{% endblock %}

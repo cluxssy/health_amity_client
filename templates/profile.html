@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Picture Section -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="profile-pic-wrapper mb-4">
+                        <img src="{{ current_user.profile_photo or url_for('static', filename='img/default-avatar.png') }}" 
+                             alt="Profile Picture" 
+                             class="rounded-circle profile-pic"
+                             id="profile-preview">
+                    </div>
+                    <form action="{{ url_for('upload_profile_picture') }}" method="POST" enctype="multipart/form-data" id="profile-pic-form">
+                        <div class="mb-3">
+                            <label for="profile_picture" class="btn btn-outline-primary">
+                                <i class="bi bi-camera"></i> Change Picture
+                            </label>
+                            <input type="file" class="d-none" id="profile_picture" name="profile_picture" accept="image/*">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Details Section -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Profile Details</h3>
+                    <form action="{{ url_for('update_profile') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">New Password (leave blank to keep current)</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('profile_picture').addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profile-preview').src = e.target.result;
+        };
+        reader.readAsDataURL(this.files[0]);
+        
+        // Automatically submit the form when a file is selected
+        document.getElementById('profile-pic-form').submit();
+    }
+});
+</script>
+{% endblock %}
