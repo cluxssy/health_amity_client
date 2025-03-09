@@ -138,12 +138,6 @@ healthamity/
 - Microsoft Edge
 - Safari
 
-## Support
-
-For support, please contact:
-- Email: support@healthamity.com
-- Website: www.healthamity.com
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
