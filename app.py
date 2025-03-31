@@ -196,6 +196,352 @@ def health_monitoring():
                          records=records,
                          records_json=json.dumps(records_json))
 
+def analyze_health_metrics(blood_pressure, blood_sugar, heart_rate):
+    """Analyze health metrics and provide static response based on values"""
+    analysis = {
+        'conditions': [],
+        'precautions': [],
+        'disclaimer': '\n    IMPORTANT HEALTH DISCLAIMER: This analysis is based on simplified static rules and is provided for educational and informational purposes only. It should not be considered as medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for proper evaluation, diagnosis, and treatment of medical conditions.\n    ',
+        'hospitals': [
+            {
+                'name': 'Fortis Hospital',
+                'address': 'Sector 62, Noida',
+                'phone': '+91-120-4300222',
+                'emergency': 'Yes',
+                'specialties': 'Cardiology, Neurology, Orthopedics'
+            },
+            {
+                'name': 'Jaypee Hospital',
+                'address': 'Sector 128, Noida',
+                'phone': '+91-120-4122222',
+                'emergency': 'Yes',
+                'specialties': 'Cardiology, Gastroenterology, Oncology'
+            },
+            {
+                'name': 'Felix Hospital',
+                'address': 'Sector 137, Noida',
+                'phone': '+91-120-7135000',
+                'emergency': 'Yes',
+                'specialties': 'Internal Medicine, Pediatrics, General Surgery'
+            },
+            {
+                'name': 'Kailash Hospital',
+                'address': 'Sector 27, Noida',
+                'phone': '+91-120-2770150',
+                'emergency': 'Yes',
+                'specialties': 'Cardiology, Nephrology, Orthopedics'
+            },
+            {
+                'name': 'Metro Hospital',
+                'address': 'Sector 11, Noida',
+                'phone': '+91-120-4766666',
+                'emergency': 'Yes',
+                'specialties': 'Cardiology, Pulmonology, Endocrinology'
+            }
+        ]
+    }
+    
+    # Blood Pressure Analysis
+    if blood_pressure:
+        try:
+            systolic, diastolic = map(int, blood_pressure.split('/'))
+            
+            # Hypertension (High BP)
+            if systolic >= 140 or diastolic >= 90:
+                analysis['conditions'].append({
+                    'name': 'Hypertension (High Blood Pressure)',
+                    'description': 'Your blood pressure reading suggests hypertension. Consistent high blood pressure can strain your heart and damage blood vessels.',
+                    'severity': 'Moderate to High'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing High Blood Pressure',
+                    'steps': [
+                        'Reduce sodium (salt) intake in your diet',
+                        'Exercise regularly - aim for 30 minutes of moderate activity most days',
+                        'Maintain a healthy weight',
+                        'Limit alcohol consumption',
+                        'Quit smoking if applicable',
+                        'Monitor your blood pressure regularly',
+                        'Take medications as prescribed by your doctor',
+                        'Manage stress through meditation, yoga, or other relaxation techniques'
+                    ]
+                })
+            
+            # Hypotension (Low BP)
+            elif systolic < 90 or diastolic < 60:
+                analysis['conditions'].append({
+                    'name': 'Hypotension (Low Blood Pressure)',
+                    'description': 'Your blood pressure reading suggests hypotension. Low blood pressure can cause dizziness, fainting, and in severe cases, shock.',
+                    'severity': 'Mild to Moderate'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing Low Blood Pressure',
+                    'steps': [
+                        'Stay hydrated by drinking plenty of fluids',
+                        'Increase salt intake slightly (consult with your doctor first)',
+                        'Eat smaller, more frequent meals to prevent post-meal drops in blood pressure',
+                        'Avoid standing up quickly from sitting or lying positions',
+                        'Avoid prolonged hot showers or baths',
+                        'Wear compression stockings if recommended by your doctor',
+                        'Check with your doctor about medication adjustments if you are taking any'
+                    ]
+                })
+            
+            # Normal BP
+            else:
+                analysis['conditions'].append({
+                    'name': 'Normal Blood Pressure',
+                    'description': 'Your blood pressure is within the normal range.',
+                    'severity': 'Low (Healthy)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Maintaining Healthy Blood Pressure',
+                    'steps': [
+                        'Continue with a balanced diet rich in fruits, vegetables, and whole grains',
+                        'Maintain regular physical activity',
+                        'Limit alcohol consumption',
+                        'Avoid or quit smoking',
+                        'Manage stress effectively',
+                        'Get regular check-ups'
+                    ]
+                })
+        except ValueError:
+            # Invalid format - no analysis
+            pass
+    
+    # Blood Sugar Analysis
+    if blood_sugar is not None:
+        try:
+            # Convert to float if it's a string
+            if isinstance(blood_sugar, str) and blood_sugar.strip():
+                blood_sugar = float(blood_sugar)
+            
+            # Analyze blood sugar level
+            if blood_sugar >= 126:
+                analysis['conditions'].append({
+                    'name': 'High Blood Sugar (Potential Diabetes)',
+                    'description': 'Your fasting blood sugar level suggests hyperglycemia, which is a sign of diabetes when consistently elevated.',
+                    'severity': 'High'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing High Blood Sugar',
+                    'steps': [
+                        'Follow a balanced diet low in refined carbohydrates and sugars',
+                        'Exercise regularly to help reduce blood sugar levels',
+                        'Monitor your blood sugar levels as advised by your healthcare provider',
+                        'Take medications or insulin as prescribed',
+                        'Stay hydrated by drinking plenty of water',
+                        'Avoid skipping meals',
+                        'Learn to recognize and manage symptoms of high and low blood sugar',
+                        'Get regular medical check-ups'
+                    ]
+                })
+            elif 100 <= blood_sugar < 126:
+                analysis['conditions'].append({
+                    'name': 'Pre-diabetes (Impaired Fasting Glucose)',
+                    'description': 'Your blood sugar level suggests pre-diabetes, which means your blood sugar is higher than normal but not high enough to be diagnosed as diabetes.',
+                    'severity': 'Moderate'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing Pre-diabetes',
+                    'steps': [
+                        'Focus on a diet rich in vegetables, fruits, and whole grains',
+                        'Limit refined carbohydrates and sugary foods',
+                        'Aim for 150 minutes of moderate exercise per week',
+                        'Lose weight if you are overweight (even 5-7% of body weight can help)',
+                        'Monitor your blood sugar regularly',
+                        'Get regular check-ups to track your progress'
+                    ]
+                })
+            elif 70 <= blood_sugar < 100:
+                analysis['conditions'].append({
+                    'name': 'Normal Blood Sugar Level',
+                    'description': 'Your fasting blood sugar level is within the normal range.',
+                    'severity': 'Low (Healthy)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Maintaining Healthy Blood Sugar',
+                    'steps': [
+                        'Continue with a balanced diet',
+                        'Maintain regular physical activity',
+                        'Have your blood sugar checked during regular health check-ups'
+                    ]
+                })
+            elif blood_sugar < 70:
+                analysis['conditions'].append({
+                    'name': 'Hypoglycemia (Low Blood Sugar)',
+                    'description': 'Your blood sugar level is below normal, which can lead to symptoms like shakiness, dizziness, and confusion.',
+                    'severity': 'Moderate to High (depending on symptoms)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing Low Blood Sugar',
+                    'steps': [
+                        'Consume 15-20 grams of fast-acting carbohydrates (juice, honey, glucose tablets)',
+                        'Wait 15 minutes and check your blood sugar again',
+                        'If still low, repeat the treatment',
+                        'Once blood sugar normalizes, eat a small snack or meal',
+                        'Identify and address the cause of low blood sugar',
+                        'Always carry fast-acting carbohydrates with you',
+                        'Consider using a continuous glucose monitor if episodes are frequent'
+                    ]
+                })
+        except (ValueError, TypeError):
+            # If conversion failed, skip blood sugar analysis
+            pass
+    
+    # Heart Rate Analysis
+    if heart_rate is not None:
+        try:
+            # Convert to int if it's a string
+            if isinstance(heart_rate, str) and heart_rate.strip():
+                heart_rate = int(heart_rate)
+                
+            # Analyze heart rate
+            if heart_rate > 100:
+                analysis['conditions'].append({
+                    'name': 'Tachycardia (High Heart Rate)',
+                    'description': 'Your resting heart rate is elevated, which could be due to various factors including stress, caffeine, medication, or underlying heart conditions.',
+                    'severity': 'Moderate (depends on symptoms and persistence)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing High Heart Rate',
+                    'steps': [
+                        'Practice relaxation techniques like deep breathing',
+                        'Limit or avoid caffeine and alcohol',
+                        'Stay hydrated',
+                        'Avoid smoking',
+                        'Get adequate rest',
+                        'Consult with a healthcare provider if high heart rate persists or is accompanied by other symptoms',
+                        'Follow prescribed medication regimen if applicable'
+                    ]
+                })
+            elif heart_rate < 60:
+                analysis['conditions'].append({
+                    'name': 'Bradycardia (Low Heart Rate)',
+                    'description': 'Your resting heart rate is lower than normal. While this can be normal for athletes or during sleep, it can also indicate a heart condition in some cases.',
+                    'severity': 'Mild to Moderate (depends on symptoms)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Managing Low Heart Rate',
+                    'steps': [
+                        'Monitor for symptoms like dizziness, fatigue, or shortness of breath',
+                        'Consult with a healthcare provider if symptomatic',
+                        'Adjust medications if they might be contributing (under medical supervision)',
+                        'Maintain regular check-ups with your healthcare provider',
+                        'If you are an athlete, this may be normal for you, but still discuss with your doctor'
+                    ]
+                })
+            else:
+                analysis['conditions'].append({
+                    'name': 'Normal Heart Rate',
+                    'description': 'Your resting heart rate is within the normal range of 60-100 beats per minute.',
+                    'severity': 'Low (Healthy)'
+                })
+                analysis['precautions'].append({
+                    'title': 'Maintaining Heart Health',
+                    'steps': [
+                        'Continue with regular cardiovascular exercise',
+                        'Maintain a heart-healthy diet low in saturated fats and sodium',
+                        'Manage stress effectively',
+                        'Get adequate sleep',
+                        'Avoid smoking and excessive alcohol consumption',
+                        'Have regular heart health check-ups'
+                    ]
+                })
+        except (ValueError, TypeError):
+            # If conversion failed, skip heart rate analysis
+            pass
+    
+    # Add a general disclaimer
+    analysis['disclaimer'] = """
+    IMPORTANT HEALTH DISCLAIMER: This analysis is based on simplified static rules and is provided for educational and informational purposes only. It should not be considered as medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for proper evaluation, diagnosis, and treatment of medical conditions.
+    """
+    
+    return analysis
+
+@app.route('/analyze-health', methods=['POST'])
+@login_required
+def analyze_health():
+    data = request.json
+    
+    blood_pressure = data.get('blood_pressure')
+    blood_sugar = data.get('blood_sugar')
+    heart_rate = data.get('heart_rate')
+    
+    analysis = analyze_health_metrics(blood_pressure, blood_sugar, heart_rate)
+    return jsonify(analysis)
+
+@app.route('/api/analyze-health', methods=['POST'])
+def api_analyze_health():
+    """Public API endpoint for health analysis (testing purposes)"""
+    app.logger.info("=== API Health Analysis Request Received ===")
+    try:
+        # Check the raw request
+        app.logger.info(f"Request method: {request.method}")
+        app.logger.info(f"Request headers: {dict(request.headers)}")
+        app.logger.info(f"Request data: {request.get_data(as_text=True)}")
+        
+        # Parse the JSON data
+        try:
+            data = request.json
+            app.logger.info(f"Parsed JSON data: {data}")
+        except Exception as json_error:
+            app.logger.error(f"JSON parsing error: {str(json_error)}")
+            return jsonify({"error": "Invalid JSON format in request"}), 400
+        
+        if not data:
+            app.logger.error("Empty data received")
+            return jsonify({"error": "No data provided or invalid JSON format"}), 400
+        
+        # Extract and validate blood pressure
+        blood_pressure = data.get('blood_pressure', '')
+        app.logger.info(f"Blood pressure (raw): {blood_pressure}")
+        
+        # Extract and convert blood sugar
+        blood_sugar = data.get('blood_sugar', None)
+        app.logger.info(f"Blood sugar (raw): {blood_sugar}, type: {type(blood_sugar)}")
+        if blood_sugar is not None:
+            try:
+                if isinstance(blood_sugar, str) and blood_sugar.strip():
+                    blood_sugar = float(blood_sugar)
+                    app.logger.info(f"Blood sugar (converted): {blood_sugar}")
+                elif isinstance(blood_sugar, (int, float)):
+                    app.logger.info(f"Blood sugar already numeric: {blood_sugar}")
+                else:
+                    app.logger.info(f"Blood sugar is neither string nor numeric: {blood_sugar}")
+            except ValueError as ve:
+                app.logger.error(f"Blood sugar conversion error: {str(ve)}")
+                return jsonify({"error": "Invalid blood sugar value format"}), 400
+        
+        # Extract and convert heart rate
+        heart_rate = data.get('heart_rate', None)
+        app.logger.info(f"Heart rate (raw): {heart_rate}, type: {type(heart_rate)}")
+        if heart_rate is not None:
+            try:
+                if isinstance(heart_rate, str) and heart_rate.strip():
+                    heart_rate = int(heart_rate)
+                    app.logger.info(f"Heart rate (converted): {heart_rate}")
+                elif isinstance(heart_rate, (int, float)):
+                    heart_rate = int(heart_rate)
+                    app.logger.info(f"Heart rate converted to int: {heart_rate}")
+                else:
+                    app.logger.info(f"Heart rate is neither string nor numeric: {heart_rate}")
+            except ValueError as ve:
+                app.logger.error(f"Heart rate conversion error: {str(ve)}")
+                return jsonify({"error": "Invalid heart rate value format"}), 400
+        
+        # Analyze health metrics
+        app.logger.info(f"Calling analyze_health_metrics with: bp={blood_pressure}, bs={blood_sugar}, hr={heart_rate}")
+        analysis = analyze_health_metrics(blood_pressure, blood_sugar, heart_rate)
+        app.logger.info(f"Analysis result: {analysis}")
+        return jsonify(analysis)
+    except Exception as e:
+        # Log the error
+        app.logger.error(f"Error in API health analysis: {str(e)}")
+        import traceback
+        app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({"error": f"An error occurred during health analysis: {str(e)}"}), 500
+
 @app.route('/add-health-record', methods=['POST'])
 @login_required
 def add_health_record():
@@ -392,4 +738,4 @@ def register():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

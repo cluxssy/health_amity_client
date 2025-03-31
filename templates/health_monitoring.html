@@ -49,6 +49,86 @@
         </div>
     </div>
 
+    <!-- Health Analysis Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0 fw-bold">Health Analysis</h4>
+                <i class="bi bi-clipboard2-pulse text-primary fs-4"></i>
+            </div>
+            <p class="text-secondary mb-4">Enter your vitals below to receive a quick analysis of your health metrics.</p>
+            
+            <form id="health-analysis-form" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="analysis_bp" class="form-label text-secondary">Blood Pressure (mmHg)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-heart-pulse text-primary"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="analysis_bp" name="analysis_bp" placeholder="120/80">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="analysis_bs" class="form-label text-secondary">Blood Sugar (mg/dL)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-droplet text-primary"></i>
+                            </span>
+                            <input type="number" step="0.1" class="form-control border-start-0 ps-0" id="analysis_bs" name="analysis_bs" placeholder="100">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="analysis_hr" class="form-label text-secondary">Heart Rate (bpm)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-activity text-primary"></i>
+                            </span>
+                            <input type="number" class="form-control border-start-0 ps-0" id="analysis_hr" name="analysis_hr" placeholder="75">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-search me-2"></i>Analyze Health
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Analysis Results Section (Hidden by default) -->
+            <div id="analysis-results" class="d-none">
+                <div class="alert alert-info mb-4">
+                    <p class="mb-0" id="analysis-disclaimer"></p>
+                </div>
+
+                <!-- Conditions Section -->
+                <h5 class="fw-bold mb-3"><i class="bi bi-clipboard2-pulse me-2"></i>Potential Conditions</h5>
+                <div id="conditions-container" class="mb-4"></div>
+
+                <!-- Precautions Section -->
+                <h5 class="fw-bold mb-3"><i class="bi bi-shield-check me-2"></i>Precautions & Recommendations</h5>
+                <div id="precautions-container" class="mb-4"></div>
+
+                <!-- Hospitals Section -->
+                <h5 class="fw-bold mb-3"><i class="bi bi-hospital me-2"></i>Nearby Hospitals in Noida</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Address</th>
+                                <th>Contact</th>
+                                <th>Specialties</th>
+                                <th>Emergency Services</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hospitals-container"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Add New Record Card -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
@@ -214,52 +294,258 @@
 
 {% block scripts %}
 <script>
-// Form submission handler
-document.getElementById('health-record-form').addEventListener('submit', async function(e) {
+// Health Analysis Form Handler
+document.getElementById('health-analysis-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     // Get form data
     const formData = {
-        blood_pressure: document.getElementById('blood_pressure').value,
-        blood_sugar: document.getElementById('blood_sugar').value,
-        heart_rate: document.getElementById('heart_rate').value,
-        notes: document.getElementById('notes').value
+        blood_pressure: document.getElementById('analysis_bp').value,
+        blood_sugar: document.getElementById('analysis_bs').value,
+        heart_rate: document.getElementById('analysis_hr').value
     };
-
+    
     try {
-        const response = await fetch('/add-health-record', {
+        console.log('Sending analysis request with data:', formData);
+        
+        // Show loading state
+        const loadingHtml = `
+            <div class="d-flex justify-content-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-3">Analyzing health metrics...</span>
+            </div>
+        `;
+        
+        // Safely access and update DOM elements - define these variables once with let to reuse them later
+        let resultsContainer = document.getElementById('analysis-results');
+        let conditionsContainer = document.getElementById('conditions-container');
+        let precautionsContainer = document.getElementById('precautions-container');
+        let hospitalsContainer = document.getElementById('hospitals-container');
+        
+        if (resultsContainer) resultsContainer.classList.remove('d-none');
+        if (conditionsContainer) conditionsContainer.innerHTML = loadingHtml;
+        if (precautionsContainer) precautionsContainer.innerHTML = '';
+        if (hospitalsContainer) hospitalsContainer.innerHTML = '';
+        
+        // Make API request
+        const response = await fetch('/api/analyze-health', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(formData)
         });
-
-        const data = await response.json();
+        
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        // Try to parse the response as JSON
+        let data;
+        try {
+            data = JSON.parse(responseText);
+            console.log('Parsed data:', data);
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            // Get conditions container for error display
+            const errorContainer = document.getElementById('conditions-container');
+            if (errorContainer) {
+                errorContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>Error parsing server response</h5>
+                        <p>${responseText.substring(0, 200)}...</p>
+                        <small>See browser console for details</small>
+                    </div>
+                `;
+            } else {
+                console.error('Cannot display error: conditions-container element not found');
+            }
+            return;
+        }
+        
+        // Refresh DOM element references
+        // We're using the same variable names declared with 'let' earlier
+        conditionsContainer = document.getElementById('conditions-container');
+        precautionsContainer = document.getElementById('precautions-container');
+        hospitalsContainer = document.getElementById('hospitals-container');
+        resultsContainer = document.getElementById('analysis-results');
+        
+        // Clear loading state
+        if (conditionsContainer) conditionsContainer.innerHTML = '';
         
         if (response.ok) {
-            // Success - reload the page to show new data
-            window.location.reload();
-        } else {
+            // Set disclaimer
+            const disclaimerElement = document.getElementById('analysis-disclaimer');
+            if (disclaimerElement) {
+                if (data.disclaimer) {
+                    disclaimerElement.textContent = data.disclaimer;
+                } else {
+                    disclaimerElement.textContent = 
+                        "IMPORTANT HEALTH DISCLAIMER: This analysis is for educational purposes only. Always consult healthcare professionals.";
+                }
+            } else {
+                console.warn("Warning: #analysis-disclaimer element not found in the DOM");
+            }
+            
+            // Display conditions
+            if (conditionsContainer && data.conditions && data.conditions.length > 0) {
+                const conditionsHtml = data.conditions.map(condition => `
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">${condition.name} 
+                                <span class="badge ${getSeverityBadgeClass(condition.severity)}">${condition.severity}</span>
+                            </h6>
+                            <p class="card-text">${condition.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+                conditionsContainer.innerHTML = conditionsHtml;
+            } else if (conditionsContainer) {
+                conditionsContainer.innerHTML = '<p>No specific conditions identified based on the provided metrics.</p>';
+            }
+            
+            // Display precautions
+            if (precautionsContainer && data.precautions && data.precautions.length > 0) {
+                const precautionsHtml = data.precautions.map(precaution => `
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">${precaution.title}</h6>
+                            <ul class="mt-2">
+                                ${precaution.steps.map(step => `<li>${step}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `).join('');
+                precautionsContainer.innerHTML = precautionsHtml;
+            } else if (precautionsContainer) {
+                precautionsContainer.innerHTML = '<p>No specific precautions available for the provided metrics.</p>';
+            }
+            
+            // Display hospitals
+            if (hospitalsContainer && data.hospitals && data.hospitals.length > 0) {
+                const hospitalsHtml = data.hospitals.map(hospital => `
+                    <tr>
+                        <td><strong>${hospital.name}</strong></td>
+                        <td>${hospital.address}</td>
+                        <td>${hospital.phone}</td>
+                        <td>${hospital.specialties}</td>
+                        <td><span class="badge bg-success">${hospital.emergency}</span></td>
+                    </tr>
+                `).join('');
+                hospitalsContainer.innerHTML = hospitalsHtml;
+            }
+            
+            // Scroll to results
+            if (resultsContainer) resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        } else if (conditionsContainer) {
             // Show error message
-            alert(data.error || 'Failed to add health record');
+            conditionsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5>Error analyzing health metrics</h5>
+                    <p>${data.error || 'Unknown error occurred'}</p>
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Failed to add health record');
+        alert('Failed to analyze health metrics');
     }
 });
 
+// Helper function to determine badge color based on severity
+function getSeverityBadgeClass(severity) {
+    severity = severity.toLowerCase();
+    if (severity.includes('high')) {
+        return 'bg-danger';
+    } else if (severity.includes('moderate')) {
+        return 'bg-warning text-dark';
+    } else {
+        return 'bg-success';
+    }
+}
+
+// Health Record Form Handler
+const healthRecordForm = document.getElementById('health-record-form');
+if (healthRecordForm) {
+    healthRecordForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form elements
+        const bpElement = document.getElementById('blood_pressure');
+        const bsElement = document.getElementById('blood_sugar');
+        const hrElement = document.getElementById('heart_rate');
+        const notesElement = document.getElementById('notes');
+        
+        // Get form data with null checks
+        const formData = {
+            blood_pressure: bpElement ? bpElement.value : '',
+            blood_sugar: bsElement ? bsElement.value : '',
+            heart_rate: hrElement ? hrElement.value : '',
+            notes: notesElement ? notesElement.value : ''
+        };
+
+        try {
+            const response = await fetch('/add-health-record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Success - reload the page to show new data
+                window.location.reload();
+            } else {
+                // Show error message
+                alert(data.error || 'Failed to add health record');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to add health record');
+        }
+    });
+}
+
 // Prepare data for charts
-const records = {{ records_json|safe }};
-const dates = records.map(r => r.date);
-const bpData = records.map(r => {
-    if (!r.blood_pressure) return null;
-    const [systolic, diastolic] = r.blood_pressure.split('/').map(Number);
-    return { systolic, diastolic };
-});
-const sugarData = records.map(r => r.blood_sugar);
-const heartData = records.map(r => r.heart_rate);
+let records = [];
+
+// This section uses Jinja2 template syntax and will be processed by Flask
+{% if records_json %}
+    try {
+        // The records_json variable is passed from Flask and converted to JavaScript
+        records = {{ records_json|safe }};
+        if (!records) records = [];
+    } catch (e) {
+        console.error('Error parsing records:', e);
+        records = [];
+    }
+{% endif %}
+
+// Fallback in case the template processing fails
+if (typeof records === 'undefined' || records === null) {
+    console.warn('No records data available or template rendering issue');
+    records = [];
+}
+
+// Add null checks for all data processing
+const dates = Array.isArray(records) ? records.map(record => record && record.date) : [];
+const bpData = Array.isArray(records) ? records.map(record => {
+    if (!record || !record.blood_pressure) return null;
+    try {
+        const [systolic, diastolic] = record.blood_pressure.split('/').map(Number);
+        return { systolic, diastolic };
+    } catch (err) {
+        console.error('Error parsing blood pressure:', err);
+        return null;
+    }
+}) : [];
+const sugarData = Array.isArray(records) ? records.map(record => record && record.blood_sugar) : [];
+const heartData = Array.isArray(records) ? records.map(record => record && record.heart_rate) : [];
 
 // Chart configuration
 const chartConfig = {
@@ -281,91 +567,111 @@ const chartConfig = {
     }
 };
 
-// Blood Pressure Chart
-const bpChart = new Chart(document.getElementById('bpChart'), {
-    type: 'line',
-    data: {
-        labels: dates,
-        datasets: [{
-            label: 'Systolic',
-            data: bpData.map(bp => bp ? bp.systolic : null),
-            borderColor: '#ef4444',
-            backgroundColor: '#fee2e2',
-            fill: false
-        }, {
-            label: 'Diastolic',
-            data: bpData.map(bp => bp ? bp.diastolic : null),
-            borderColor: '#3b82f6',
-            backgroundColor: '#dbeafe',
-            fill: false
-        }]
-    },
-    options: {
-        ...chartConfig,
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'mmHg'
-                }
-            }
-        }
-    }
-});
+// Get chart elements
+const bpChartElement = document.getElementById('bpChart');
+const sugarChartElement = document.getElementById('sugarChart');
+const heartChartElement = document.getElementById('heartChart');
 
-// Blood Sugar Chart
-const sugarChart = new Chart(document.getElementById('sugarChart'), {
-    type: 'line',
-    data: {
-        labels: dates,
-        datasets: [{
-            label: 'Blood Sugar',
-            data: sugarData,
-            borderColor: '#8b5cf6',
-            backgroundColor: '#ede9fe',
-            fill: true
-        }]
-    },
-    options: {
-        ...chartConfig,
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'mg/dL'
+// Create Blood Pressure Chart if element exists
+let bpChart;
+if (bpChartElement) {
+    bpChart = new Chart(bpChartElement, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Systolic',
+                data: bpData.map(bp => bp ? bp.systolic : null),
+                borderColor: '#ef4444',
+                backgroundColor: '#fee2e2',
+                fill: false
+            }, {
+                label: 'Diastolic',
+                data: bpData.map(bp => bp ? bp.diastolic : null),
+                borderColor: '#3b82f6',
+                backgroundColor: '#dbeafe',
+                fill: false
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'mmHg'
+                    }
                 }
             }
         }
-    }
-});
+    });
+} else {
+    console.warn('Blood pressure chart element not found');
+}
 
-// Heart Rate Chart
-const heartChart = new Chart(document.getElementById('heartChart'), {
-    type: 'line',
-    data: {
-        labels: dates,
-        datasets: [{
-            label: 'Heart Rate',
-            data: heartData,
-            borderColor: '#ec4899',
-            backgroundColor: '#fce7f3',
-            fill: true
-        }]
-    },
-    options: {
-        ...chartConfig,
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'BPM'
+// Create Blood Sugar Chart if element exists
+let sugarChart;
+if (sugarChartElement) {
+    sugarChart = new Chart(sugarChartElement, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Blood Sugar',
+                data: sugarData,
+                borderColor: '#8b5cf6',
+                backgroundColor: '#ede9fe',
+                fill: true
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'mg/dL'
+                    }
                 }
             }
         }
-    }
-});
+    });
+} else {
+    console.warn('Blood sugar chart element not found');
+}
+
+// Create Heart Rate Chart if element exists
+let heartChart;
+if (heartChartElement) {
+    heartChart = new Chart(heartChartElement, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Heart Rate',
+                data: heartData,
+                borderColor: '#ec4899',
+                backgroundColor: '#fce7f3',
+                fill: true
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'BPM'
+                    }
+                }
+            }
+        }
+    });
+} else {
+    console.warn('Heart rate chart element not found');
+}
 </script>
 {% endblock %}

@@ -57,7 +57,7 @@ HealthAmity is a modern web application for tracking and monitoring personal hea
 
 4. **Environment Setup**
    Create a `.env` file in the root directory with the following variables:
-   ```
+   ```https://openrouter.ai/settings/keys
    OPENROUTER_API_KEY=your_openrouter_api_key_here
    ```
 
